@@ -9,7 +9,9 @@ import { dirname, join } from 'path';
 import { randomUUID, scryptSync, timingSafeEqual } from 'crypto';
 import { Jimp } from 'jimp';
 import { promises as fs } from 'fs';
-
+// Mejoras para Render.com
+process.setMaxListeners(20);           // Evita warnings de memoria
+process.env.UV_THREADPOOL_SIZE = '64';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 

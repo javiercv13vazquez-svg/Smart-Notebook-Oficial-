@@ -1,12 +1,23 @@
 // Servidor local: POST /api/convert/upload + GET /api/convert/status/:id
 // Abre la app desde http://localhost:3000 (node server.js) o define el puerto abajo.
 
+// === CONFIGURACIÓN DE URL DEL SERVIDOR (Render + Local) ===
 function getApiBase() {
+  // Si estamos en Render.com
+  if (window.location.hostname.includes('onrender.com')) {
+    return window.location.origin;
+  }
+  
+  // Si estamos en desarrollo local
   if (window.location.port === '3000' || window.location.port === '3001') {
     return window.location.origin;
   }
+  
+  // Por defecto (seguridad)
   return 'http://localhost:3000';
 }
+
+const API_BASE = getApiBase();
 
 const API_BASE = getApiBase();
 

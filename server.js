@@ -296,48 +296,59 @@ function buildGlb(positions, normals, texcoords, indices, textureBuffer) {
 
   return Buffer.concat([h, jH, jB, bH, bin]);
 }
-// =====================================================
-//  RUTAS API
-// =====================================================
+// ==================== RUTAS API ====================
 
+// Ruta principal (HTML)
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, 'index.html'));
+});
+
+// API Routes
 app.post('/api/convert/upload', async (req, res) => {
-  const { imageBase64, mimeType } = req.body;
-  if (!imageBase64) return res.status(400).json({ error: 'Falta imageBase64 en el body' });
-
-  const taskId = randomUUID();
-  tasks.set(taskId, { 
-    taskId, 
-    status: 'processing', 
-    progress: 15, 
-    message: 'Limpiando fondo de la hoja...' 
-  });
-
-  (async () => {
-    const task = tasks.get(taskId);
-    try {
-      const buf = Buffer.from(imageBase64, 'base64');
-      task.progress = 60; 
-      task.message = 'Generando modelo 3D...';
-      
-      const glbBuffer = await generateGlb(buf);
-      
-      task.glbDataBase64 = glbBuffer.toString('base64');
-      task.progress = 100; 
-      task.status = 'completed'; 
-      task.message = '¡Modelo 3D listo!';
-    } catch (err) {
-      console.error('Error generando GLB:', err.message);
-      task.status = 'failed'; 
-      task.message = 'Error: ' + err.message;
+  try {
+    const { imageBase64 } = req.body;
+    if (!imageBase64) {
+      return res.status(400).json({ error: 'Falta imageBase64 en el body' });
     }
-  })();
 
-  res.json({ taskId, message: 'Conversión iniciada' });
+    const taskId = randomUUID();
+    tasks.set(taskId, {
+      taskId,
+      status: 'processing',
+      progress: 15,
+      message: 'Procesando imagen...'
+    });
+
+    // Responder inmediatamente
+    res.json({ taskId, message: 'Conversión iniciada' });
+
+    // Procesar en segundo plano
+    (async () => {
+      const task = tasks.get(taskId);
+      try {
+        const buf = Buffer.from(imageBase64, 'base64');
+        const glbBuffer = await generateGlb(buf);
+        
+        task.glbDataBase64 = glbBuffer.toString('base64');
+        task.status = 'completed';
+        task.progress = 100;
+        task.message = '¡Modelo 3D listo!';
+      } catch (err) {
+        console.error('Error generando GLB:', err);
+        task.status = 'failed';
+        task.message = err.message || 'Error desconocido';
+      }
+    })();
+  } catch (error) {
+    console.error('Error en /api/convert/upload:', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 app.get('/api/convert/status/:taskId', (req, res) => {
   const task = tasks.get(req.params.taskId);
   if (!task) return res.status(404).json({ error: 'Tarea no encontrada' });
+  
   res.json({
     taskId: task.taskId,
     status: task.status,
@@ -347,24 +358,13 @@ app.get('/api/convert/status/:taskId', (req, res) => {
   });
 });
 
-// Rutas de Auth y Projects (temporalmente desactivadas)
-app.post('/api/auth/register', async (req, res) => {
-  res.status(501).json({ error: 'Registro en desarrollo' });
+// Fallback para cualquier otra ruta (importante)
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: `Ruta no encontrada: ${req.path}` });
+  }
+  res.sendFile(join(__dirname, 'index.html'));
 });
-app.post('/api/auth/login', async (req, res) => {
-  res.status(501).json({ error: 'Login en desarrollo' });
-});
-app.get('/api/auth/me', async (req, res) => {
-  res.status(501).json({ error: 'Funcionalidad en desarrollo' });
-});
-app.post('/api/projects', async (req, res) => {
-  res.status(501).json({ error: 'Guardado en desarrollo' });
-});
-app.get('/api/projects', async (req, res) => {
-  res.status(501).json({ error: 'Funcionalidad en desarrollo' });
-});
-
-app.get('/', (req, res) => res.sendFile(join(__dirname, 'index.html')));
 
 // =====================================================
 //  INICIAR SERVIDOR

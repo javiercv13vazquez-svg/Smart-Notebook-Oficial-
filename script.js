@@ -3,13 +3,13 @@
 
 // === CONFIGURACIÓN DE URL DEL SERVIDOR (Render + Local) ===
 function getApiBase() {
-  // 1. Si estamos corriendo localmente (desarrollo en tu compu)
+  // 1. Si estás probando en tu computadora local
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3000'; // O el puerto en el que corra tu backend local
+    return 'http://localhost:3000';
   }
   
-  // 2. Para CUALQUIER otro lugar en internet (Netlify, GitHub Pages, etc.)
-  // Apuntamos directo y a la segura a tu servidor real de Render
+  // 2. Para Netlify o cualquier entorno en producción
+  // Quitamos cualquier barra diagonal al final para que los fetches se armen limpios
   return 'https://smart-notebook-oficial.onrender.com';
 }
 

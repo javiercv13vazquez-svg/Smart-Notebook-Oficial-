@@ -19,8 +19,6 @@ function getApiBase() {
 
 const API_BASE = getApiBase();
 
-const API_BASE = getApiBase();
-
 const scanBox = document.getElementById('scanBox');
 const overlay = document.getElementById('analyzingOverlay');
 const analyzingText = document.getElementById('analyzingText') || document.querySelector('.analyzing-text');

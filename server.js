@@ -31,6 +31,10 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.static(__dirname));
+// Fallback para SPA / rutas directas
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'index.html'));
+});
 
 // ─── Variables en memoria ────────────────────────────────
 const tasks = new Map();
@@ -360,7 +364,7 @@ app.get('/api/projects', async (req, res) => {
   res.status(501).json({ error: 'Funcionalidad en desarrollo' });
 });
 
-app.get('/', (req, res) => res.sendFile(join(__dirname, 'W01-IIA.html')));
+app.get('/', (req, res) => res.sendFile(join(__dirname, 'index.html')));
 
 // =====================================================
 //  INICIAR SERVIDOR
